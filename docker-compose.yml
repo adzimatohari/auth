@@ -1,0 +1,44 @@
+version: "3.7"
+services:
+  app:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    image: laraveljwt
+    container_name: jwt-app
+    restart: unless-stopped
+    working_dir: /var/www/laravel-jwt-app/
+    volumes:
+      - ./:/var/www/laravel-jwt-app
+    networks:
+      - jwt
+
+  db:
+    image: mysql:8.0
+    container_name: jwt-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+      SERVICE_TAGS: dev
+      SERVICE_NAME: mysql
+    networks:
+      - jwt
+
+  nginx:
+    image: nginx:alpine
+    container_name: jwt-nginx
+    restart: unless-stopped
+    ports:
+      - 8000:80
+    volumes:
+      - ./:/var/www/laravel-jwt-app
+      - ./docker-compose/nginx:/etc/nginx/conf.d/
+    networks:
+      - jwt
+
+networks:
+  jwt:
+    driver: bridge
